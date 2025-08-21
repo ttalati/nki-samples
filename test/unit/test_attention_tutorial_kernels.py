@@ -5,6 +5,7 @@ import random
 import pytest
 import numpy as np
 import neuronxcc.nki.language as nl
+from neuronxcc.nki import benchmark, baremetal, simulate_kernel
 from nki_samples.tutorials.attention_fwd_performance.attention_kernels import *
 
 # Test parameters
@@ -29,8 +30,9 @@ def numpy_attention(q, k, v):
     attn_out = np.matmul(scores, v_t)
     return attn_out
 
+@pytest.mark.simulation
 @pytest.mark.parametrize("version", VERSIONS)
-def test_attention_accuracy(version):
+def test_attention_accuracy(simulation_only, version):
     """Test attention kernel accuracy against numpy reference"""
     if version == attn_fwd_v10 and SKIP_V10:
         pytest.skip("Skipping v10 this iteration")
@@ -46,8 +48,13 @@ def test_attention_accuracy(version):
     k = nl.static_cast((np.random.random_sample([d_head, seqlen]) - 0.5) * 2, dtype)
     v = nl.static_cast((np.random.random_sample([d_head, seqlen]) - 0.5) * 2, dtype)
     
+    numeric_func = baremetal(version)
     # Compare outputs
+     if simulation_only:
+        attn_out = simulate_kernel(numeric_func, q, k, v)
+    else:
+        attn_out = numeric_func(q, k, v)
+
     numpy_output = numpy_attention(q, k, v)
-    attn_out = version(q, k, v)
     
     assert np.allclose(attn_out, numpy_output, atol=1e-2)
