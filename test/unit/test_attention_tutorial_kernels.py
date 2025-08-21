@@ -50,11 +50,11 @@ def test_attention_accuracy(simulation_only, version):
     
     numeric_func = baremetal(version)
     # Compare outputs
-     if simulation_only:
+    if simulation_only:
         attn_out = simulate_kernel(numeric_func, q, k, v)
     else:
         attn_out = numeric_func(q, k, v)
 
     numpy_output = numpy_attention(q, k, v)
     
-    assert np.allclose(attn_out, numpy_output, atol=1e-2)
+    assert np.allclose(attn_out.astype(np.float32), numpy_output.astype(np.float32), atol=1e-2)
