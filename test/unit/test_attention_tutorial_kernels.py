@@ -34,9 +34,9 @@ def numpy_attention(q, k, v):
 @pytest.mark.parametrize("version", VERSIONS)
 def test_attention_accuracy(simulation_only, version):
     """Test attention kernel accuracy against numpy reference"""
-    if version == attn_fwd_v10 and SKIP_V10:
+    if version == not simulation_only and attn_fwd_v10 and SKIP_V10:
         pytest.skip("Skipping v10 this iteration")
-    if version == attn_fwd_v9 and not SKIP_V10:
+    if version == not simulation_only and attn_fwd_v9 and not SKIP_V10:
         pytest.skip("Skipping v9 this iteration")    
     # Use smaller sequence length for v1 and v2
     seqlen = 128 if version in [attn_fwd_v1, attn_fwd_v2] else 4096
